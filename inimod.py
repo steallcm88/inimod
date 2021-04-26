@@ -2,16 +2,16 @@
 # if not, add it
 
 fn = 'WCNSS_qcom_cfg.ini'
-param_list = [['gEnableBmps','gEnableImps'],['gDot11Mode'],['BandCapability'],['gTxBFEnable','gEnableMuBformee'],['FastRoamEnabled','gEnableFWRssiMonitoring','FastTransitionEnabled','gEnableDFSChnlScan']]
-value_list = [['0','0'],['0'],['0'],['0','0'],['0','0','0','0']]
-paramExist_list=[['0','0'],['0'],['0'],['0','0'],['0','0','0','0']]
+param_list = [['gEnableBmps','gEnableImps'],['gDot11Mode'],['BandCapability'],['gTxBFEnable','gEnableMuBformee'],['FastRoamEnabled','gEnableFWRssiMonitoring','FastTransitionEnabled','gEnableDFSChnlScan'],['gMulticastHostMsgs','vosTraceEnableWDI','vosTraceEnableHDD','vosTraceEnableSME','vosTraceEnableWDA']]
+value_list = [['0','0'],['0'],['0'],['0','0'],['0','0','0','0'],['0','511','511','511','511']]
+paramExist_list=[['0','0'],['0'],['0'],['0','0'],['0','0','0','0'],['0','0','0','0','0']]
 mode = 0
 
 ###########################
 # Menu & Input
 ###########################
 print("\rPlease select which item you want to run :\n")
-type = int(input ("(1)Disable power save (2)Change STA network mode (3)Set band capability (4)Disable TX beamforming/MU-MIMO (5)Disable Roaming....\n"))
+type = int(input ("(1)Disable power save (2)Change STA network mode (3)Set band capability (4)Disable TX beamforming/MU-MIMO (5)Disable Roaming....(6)Enable debug mask\n"))
 if type == 1:
     print("Disable power save...\n")
 elif type == 2:
@@ -27,7 +27,9 @@ elif type == 3:
 elif type == 4:
     print("Disable TX beamforming/MU-MIMO...\n")
 elif type == 5:
-    print("Disable Roaming...\n")    
+    print("Disable Roaming...\n")
+elif type == 6:
+    print("Enable Debug mask...\n")    
 else :
     exit()
 
@@ -44,6 +46,7 @@ with open(fn) as file_obj:
 
 index = 0
 type = type-1
+no_mark = 0
 for line in obj_list:
     index_param = 0
     if line == '\n':
@@ -55,11 +58,11 @@ for line in obj_list:
                 print(line)
                 print("File type error in line ",index)
                 exit()
+    if('New ini parameter added here' in line):
+        no_mark = 1
     for param in param_list[type]:
         if (param in line) and ('#' not in line):
-            if type == 1:
-                value = mode
-            elif type == 2:
+            if (type == 1) or (type == 2 ):
                 value = mode
             else :
                 value = value_list[type][index_param]
@@ -80,16 +83,18 @@ new_line_insert = 0
 for paramExist in paramExist_list[type]:
     if paramExist == '0':
         param = param_list[type][index_param]
-        if type == 1:
-            value = mode
-        elif type ==2:
+        if (type == 1) or (type == 2 ):
             value = mode
         else :
             value = value_list[type][index_param]
         print('param: ', param)
         print('value: ', value)
-        obj_list.insert(0,param + '=' + value + '\n')
-        new_line_insert = 1
+        if(no_mark == 0):
+            obj_list.insert(0,param + '=' + value + '\n')
+            new_line_insert = 1
+        else :
+            obj_list.insert(1,param + '=' + value + '\n')
+       
     index_param += 1
 
 if new_line_insert == 1:
